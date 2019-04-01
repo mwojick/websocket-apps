@@ -1,6 +1,6 @@
 let ws;
 const connect = () => {
-  ws = new WebSocket("ws://localhost:3210");
+  ws = new WebSocket("ws://localhost:80/ws-cont");
 
   ws.addEventListener("open", function open() {
     ws.send("From Client");
@@ -15,6 +15,7 @@ const connect = () => {
     console.log(event.data);
   });
 
+  // handle disconnect
   ws.addEventListener("close", function close() {
     console.log("disconnected");
     ws = null;
