@@ -4,11 +4,15 @@
   "description": "",
   "main": "client.js",
   "dependencies": {
+    "esm": "^3.2.22",
     "express": "^4.16.4",
-    "express-ws": "^4.0.0"
+    "express-ws": "^4.0.0",
+    "node-fetch": "^2.3.0"
   },
   "devDependencies": {},
   "scripts": {
+    "control": "nodemon -r esm control-server.js",
+    "app": "nodemon -r esm app-server.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
   },
