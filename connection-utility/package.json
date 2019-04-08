@@ -11,10 +11,9 @@
   },
   "devDependencies": {},
   "scripts": {
-    "control": "nodemon -r esm control-server.js",
-    "app": "nodemon -r esm app-server.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "server": "nodemon -r esm server.js",
+    "client": "parcel ./public/index.html",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",

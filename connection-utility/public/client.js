@@ -1,32 +1,28 @@
-const host = "localhost:";
+import { host, nginxPort, httpConnections, wsConnections } from "../config";
 
-const controlPort = 80;
-const controlHttpRoute = "/http-req";
-const controlWsRoute = "/ws-con";
-
-const fetchWith = (method, data) => {
-  return fetch(`http://${host}${controlPort}${controlHttpRoute}`, {
+const fetchWith = method => {
+  return fetch(`http://${host}${nginxPort}`, {
     method: method,
-    body: JSON.stringify({ content: data }),
+    body: JSON.stringify(httpConnections),
     headers: { "Content-Type": "application/json" }
   }).then(resp => resp.json());
 };
 
-fetch(`http://${host}${controlPort}${controlHttpRoute}`)
-  .then(resp => resp.json())
-  .then(console.log);
+// fetch(`http://${host}${nginxPort}/get`)
+//   .then(resp => resp.json())
+//   .then(console.log);
 
-fetchWith("POST", "Got a POST request").then(console.log);
-fetchWith("PUT", "Got a PUT request").then(console.log);
-fetchWith("PATCH", "Got a PATCH request").then(console.log);
-fetchWith("DELETE", "Got a DELETE request").then(console.log);
+fetchWith("POST").then(console.log);
+fetchWith("PUT").then(console.log);
+fetchWith("PATCH").then(console.log);
+fetchWith("DELETE").then(console.log);
 
 let ws;
 const connect = () => {
-  ws = new WebSocket(`ws://${host}${controlPort}${controlWsRoute}`);
+  ws = new WebSocket(`ws://${host}${nginxPort}`);
 
   ws.addEventListener("open", function open() {
-    ws.send("ws from Client");
+    ws.send(JSON.stringify(wsConnections));
 
     if (window.timerID) {
       window.clearInterval(window.timerID);
@@ -35,7 +31,7 @@ const connect = () => {
   });
 
   ws.addEventListener("message", function incoming(event) {
-    console.log(event.data);
+    console.log("ws Data: ", JSON.parse(event.data));
   });
 
   // handle disconnect
@@ -50,5 +46,7 @@ const connect = () => {
     }
   });
 };
-
-connect();
+// ###################
+// connect();
+//
+//
