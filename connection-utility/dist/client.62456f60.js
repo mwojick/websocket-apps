@@ -229,15 +229,16 @@ var connect = function connect() {
     ws = null; // Avoid firing a new setInterval, after one has been done
 
     if (!window.timerID) {
+      // try to auto-reconnect every 5 seconds
       window.timerID = setInterval(function () {
         connect();
       }, 5000);
     }
   });
 }; // ###################
-// connect();
-//
-//
+
+
+connect(); // ###################
 },{"../config":"../config.js"}],"../../../../.nvm/versions/node/v10.15.1/lib/node_modules/parcel-bundler/src/builtins/hmr-runtime.js":[function(require,module,exports) {
 var global = arguments[3];
 var OVERLAY_ID = '__parcel__error__overlay__';

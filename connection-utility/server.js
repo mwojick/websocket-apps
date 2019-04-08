@@ -3,10 +3,10 @@ const expressWs = require("express-ws");
 const WebSocket = require("ws");
 const rp = require("request-promise");
 
-import { host, root, appPort } from "./config";
+import { root } from "./config";
 
 const app = express();
-const wsApp = expressWs(app);
+expressWs(app);
 const port = parseInt(process.argv[2]);
 
 // server up files in dist folder to root
@@ -29,19 +29,22 @@ const fetchWith = (url, method, data) => {
 const handleReq = (method, req, res) => {
   const body = req.body;
   const connections = body.connections;
+  const d = new Date();
+  const time = `${d.getHours()}:${d.getMinutes()}:${d.getSeconds()}`;
   if (connections) {
     let promises = [];
     const connValues = Object.values(connections);
-    console.log("connValues:", connValues);
     connValues.forEach(con => {
       let promise = fetchWith(con.url, method, con);
       promises.push(promise);
     });
     Promise.all(promises).then(resp => {
-      res.json([`port ${port} is good (${method})`].concat(resp));
+      res.json(
+        [`Port ${port} is good (${method}) ; time: ${time}`].concat(resp)
+      );
     });
   } else {
-    res.json(`port ${port} is good (${method}) [END]`);
+    res.json(`Port ${port} is good (${method}) [END] ; time: ${time}`);
   }
 };
 
@@ -73,36 +76,39 @@ app.delete(root, function(req, res) {
   handleReq("DELETE", req, res);
 });
 
-// get all ws clients connected to this app (for broadcast)
-const wss = wsApp.getWss(root);
-
 app.ws(root, (ws, req) => {
-  console.log("Control Socket Connected");
-  ws.send("ws from Server");
+  console.log("Socket Connected, Port:", port);
 
-  let wsNext = new WebSocket(`ws://${host}${appPort}`);
-
-  wsNext.onerror = e => {
-    console.log("Error connecting to app server:", e.message);
-  };
-
-  wsNext.on("open", function open() {
-    wsNext.send("control->app");
-  });
-
-  wsNext.on("message", function incoming(data) {
-    ws.send(`From Server: ${JSON.parse(data)}`);
-  });
-
-  // broadcast to other clients (optional)
   ws.onmessage = msg => {
-    console.log("received: %s", JSON.parse(msg.data));
+    const data = JSON.parse(msg.data);
 
-    // wss.clients.forEach(client => {
-    //   if (client !== ws) {
-    //     client.send(msg.data);
-    //   }
-    // });
+    const connections = data.connections;
+    if (connections) {
+      let promises = [];
+      const connValues = Object.values(connections);
+
+      connValues.forEach(con => {
+        let promise = new Promise((res, rej) => {
+          let wsNext = new WebSocket(`ws://${con.url}`);
+          wsNext.onerror = e => {
+            console.log("Error connecting to server:", e.message);
+          };
+          wsNext.on("open", () => {
+            wsNext.send(JSON.stringify(con));
+          });
+          wsNext.on("message", msg => {
+            res(JSON.parse(msg));
+          });
+        });
+        promises.push(promise);
+      });
+
+      Promise.all(promises).then(resp => {
+        ws.send(JSON.stringify([`Port ${port} is good (ws)`].concat(resp)));
+      });
+    } else {
+      ws.send(JSON.stringify([`Port ${port} is good (ws)`]));
+    }
   };
 });
 

@@ -40,6 +40,7 @@ const connect = () => {
     ws = null;
     // Avoid firing a new setInterval, after one has been done
     if (!window.timerID) {
+      // try to auto-reconnect every 5 seconds
       window.timerID = setInterval(function() {
         connect();
       }, 5000);
@@ -47,6 +48,5 @@ const connect = () => {
   });
 };
 // ###################
-// connect();
-//
-//
+connect();
+// ###################
