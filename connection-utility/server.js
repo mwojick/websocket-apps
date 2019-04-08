@@ -1,7 +1,7 @@
 const express = require("express");
 const expressWs = require("express-ws");
 const WebSocket = require("ws");
-const fetch = require("node-fetch");
+const rp = require("request-promise");
 
 import { host, root, appPort } from "./config";
 
@@ -17,11 +17,13 @@ if (port === 80) {
 app.use(express.json());
 
 const fetchWith = (url, method, data) => {
-  return fetch(`http://${url}`, {
+  const options = {
     method: method,
-    body: JSON.stringify(data),
-    headers: { "Content-Type": "application/json" }
-  }).then(resp => resp.json());
+    uri: `http://${url}`,
+    body: data,
+    json: true // Automatically stringifies the body to JSON
+  };
+  return rp(options);
 };
 
 const handleReq = (method, req, res) => {
@@ -44,12 +46,12 @@ const handleReq = (method, req, res) => {
 };
 
 // Respond to GET request
-app.get(root + "get", function(req, res) {
-  console.log("GET:", req.body);
-  fetch(`http://${host}${appPort}/get`)
-    .then(resp => resp.json())
-    .then(resp => res.json(resp));
-});
+// app.get(root + "get", function(req, res) {
+//   console.log("GET:", req.body);
+//   fetch(`http://${host}${appPort}/get`)
+//     .then(resp => resp.json())
+//     .then(resp => res.json(resp));
+// });
 
 // Respond to POST request:
 app.post(root, function(req, res) {
